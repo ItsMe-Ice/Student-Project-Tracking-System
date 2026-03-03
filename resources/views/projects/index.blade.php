@@ -3,17 +3,24 @@
 @endphp
 
 <x-app-layout>
+    @if(auth()->user()->isTeacher())
+        @php
+            $projects = $projects->where('teacher_id', auth()->id());
+        @endphp
+    @endif
     <x-slot name="header">
         <div class="flex items-center justify-between">
             <h2 class="font-semibold text-xl text-gray-800 leading-tight">
                 {{ __('Project Management') }}
             </h2>
+            @if(!auth()->user()->isTeacher())
             <a href="{{ route('projects.create') }}" class="inline-flex items-center px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white text-sm font-medium rounded-lg transition-colors duration-200 shadow-md hover:shadow-lg">
                 <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path>
                 </svg>
                 Create New Project
             </a>
+            @endif
         </div>
     </x-slot>
 
@@ -21,73 +28,79 @@
         <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
             <!-- Stats Overview -->
             <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
-                <div class="bg-white rounded-xl shadow-lg p-6">
-                    <div class="flex items-center justify-between">
-                        <div>
-                            <p class="text-sm font-medium text-gray-600">Total Projects</p>
-                            <p class="text-2xl font-bold text-gray-900">{{ $projects->total() }}</p>
-                        </div>
-                        <div class="bg-blue-100 p-3 rounded-full">
-                            <svg class="w-6 h-6 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 13.255A23.931 23.931 0 0112 15c-3.183 0-6.22-.62-9-1.745M16 6V4a2 2 0 00-2-2h-4a2 2 0 00-2 2v2m4 6h.01M5 20h14a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"></path>
-                            </svg>
-                        </div>
-                    </div>
-                </div>
+<div class="bg-white rounded-xl shadow-lg p-6">
+    <div class="flex items-center justify-between">
+        <div>
+            <p class="text-sm font-medium text-gray-600">Total Projects</p>
+            <p class="text-2xl font-bold text-gray-900">{{ $projects->count() }}</p>
+        </div>
+        <div class="bg-blue-100 p-3 rounded-full">
+            <svg class="w-6 h-6 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 13.255A23.931 23.931 0 0112 15c-3.183 0-6.22-.62-9-1.745M16 6V4a2 2 0 00-2-2h-4a2 2 0 00-2 2v2m4 6h.01M5 20h14a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"></path>
+            </svg>
+        </div>
+    </div>
+</div>
 
-                <div class="bg-white rounded-xl shadow-lg p-6">
-                    <div class="flex items-center justify-between">
-                        <div>
-                            <p class="text-sm font-medium text-gray-600">In Progress</p>
-                            <p class="text-2xl font-bold text-yellow-600">{{ $projects->where('status', 'in_progress')->count() }}</p>
-                        </div>
-                        <div class="bg-yellow-100 p-3 rounded-full">
-                            <svg class="w-6 h-6 text-yellow-600" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path>
-                            </svg>
-                        </div>
-                    </div>
-                </div>
+<div class="bg-white rounded-xl shadow-lg p-6">
+    <div class="flex items-center justify-between">
+        <div>
+            <p class="text-sm font-medium text-gray-600">In Progress</p>
+            <p class="text-2xl font-bold text-yellow-600">{{ $projects->where('status', 'in_progress')->count() }}</p>
+        </div>
+        <div class="bg-yellow-100 p-3 rounded-full">
+            <svg class="w-6 h-6 text-yellow-600" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path>
+            </svg>
+        </div>
+    </div>
+</div>
 
-                <div class="bg-white rounded-xl shadow-lg p-6">
-                    <div class="flex items-center justify-between">
-                        <div>
-                            <p class="text-sm font-medium text-gray-600">Completed</p>
-                            <p class="text-2xl font-bold text-green-600">{{ $projects->where('status', 'completed')->count() }}</p>
-                        </div>
-                        <div class="bg-green-100 p-3 rounded-full">
-                            <svg class="w-6 h-6 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
-                            </svg>
-                        </div>
-                    </div>
-                </div>
+<div class="bg-white rounded-xl shadow-lg p-6">
+    <div class="flex items-center justify-between">
+        <div>
+            <p class="text-sm font-medium text-gray-600">Completed</p>
+            <p class="text-2xl font-bold text-green-600">{{ $projects->where('status', 'completed')->count() }}</p>
+        </div>
+        <div class="bg-green-100 p-3 rounded-full">
+            <svg class="w-6 h-6 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+            </svg>
+        </div>
+    </div>
+</div>
 
-                <div class="bg-white rounded-xl shadow-lg p-6">
-                    <div class="flex items-center justify-between">
-                        <div>
-                            <p class="text-sm font-medium text-gray-600">Pending</p>
-                            <p class="text-2xl font-bold text-gray-600">{{ $projects->where('status', 'pending')->count() }}</p>
-                        </div>
-                        <div class="bg-gray-100 p-3 rounded-full">
-                            <svg class="w-6 h-6 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
-                            </svg>
-                        </div>
-                    </div>
-                </div>
+<div class="bg-white rounded-xl shadow-lg p-6">
+    <div class="flex items-center justify-between">
+        <div>
+            <p class="text-sm font-medium text-gray-600">Pending</p>
+            <p class="text-2xl font-bold text-gray-600">{{ $projects->where('status', 'pending')->count() }}</p>
+        </div>
+        <div class="bg-gray-100 p-3 rounded-full">
+            <svg class="w-6 h-6 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+            </svg>
+        </div>
+    </div>
+</div>
             </div>
 
             <!-- Projects Table -->
             <div class="bg-white rounded-xl shadow-lg overflow-hidden">
-                <div class="p-6 border-b border-gray-200">
-                    <div class="flex items-center justify-between">
-                        <h3 class="text-lg font-semibold text-gray-900">Project List</h3>
-                        <div class="text-sm text-gray-600">
-                            Showing {{ $projects->firstItem() }} to {{ $projects->lastItem() }} of {{ $projects->total() }} projects
-                        </div>
-                    </div>
-                </div>
+<div class="p-6 border-b border-gray-200">
+    <div class="flex items-center justify-between">
+        <h3 class="text-lg font-semibold text-gray-900">Project List</h3>
+        @if($projects instanceof \Illuminate\Pagination\LengthAwarePaginator)
+            <div class="text-sm text-gray-600">
+                Showing {{ $projects->firstItem() }} to {{ $projects->lastItem() }} of {{ $projects->total() }} projects
+            </div>
+        @else
+            <div class="text-sm text-gray-600">
+                Showing {{ $projects->count() }} projects
+            </div>
+        @endif
+    </div>
+</div>
 
                 <div class="overflow-x-auto">
                     <table class="min-w-full divide-y divide-gray-200">
@@ -150,41 +163,118 @@
                                             <div class="text-xs text-gray-500 mt-1">{{ $project->progress }}% complete</div>
                                         @endif
                                     </td>
-                                    <td class="px-6 py-4 whitespace-nowrap text-sm font-medium space-x-2">
-                                        <a href="{{ route('projects.show', $project) }}" class="inline-flex items-center px-3 py-1.5 border border-transparent text-xs font-medium rounded text-blue-700 bg-blue-100 hover:bg-blue-200 transition-colors duration-200">
+<td class="px-6 py-4 whitespace-nowrap text-sm font-medium space-x-2">
+        <a href="{{ route('projects.show', $project) }}" class="inline-flex items-center px-3 py-1.5 border border-transparent text-xs font-medium rounded text-blue-700 bg-blue-100 hover:bg-blue-200 transition-colors duration-200">
+            <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"></path>
+            </svg>
+            View
+        </a>
+        @if(auth()->user()->isTeacher())
+            <a href="{{ route('projects.assign', $project) }}" class="inline-flex items-center px-3 py-1.5 border border-transparent text-xs font-medium rounded text-green-700 bg-green-100 hover:bg-green-200 transition-colors duration-200">
+                <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path>
+                </svg>
+                Assign
+            </a>
+            <div class="inline-flex items-center px-3 py-1.5 border border-transparent text-xs font-medium rounded text-gray-700 bg-gray-100 hover:bg-gray-200 transition-colors duration-200 cursor-pointer" onclick="toggleStudentContent({{ $project->id }})">
+                <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7h8m0 0v8m0-8h-8m8 0-3-3m-3 3-3 3m3-3-3 3"></path>
+                </svg>
+                Student Content
+            </div>
+        @endif
+        @if(!auth()->user()->isTeacher())
+            <a href="{{ route('projects.edit', $project) }}" class="inline-flex items-center px-3 py-1.5 border border-transparent text-xs font-medium rounded text-yellow-700 bg-yellow-100 hover:bg-yellow-200 transition-colors duration-200">
+                <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path>
+                </svg>
+                Edit
+            </a>
+            <form action="{{ route('projects.destroy', $project) }}" method="POST" class="inline">
+                @csrf
+                @method('DELETE')
+                <button type="submit" onclick="return confirm('Are you sure you want to delete this project?')" class="inline-flex items-center px-3 py-1.5 border border-transparent text-xs font-medium rounded text-red-700 bg-red-100 hover:bg-red-200 transition-colors duration-200">
+                    <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path>
+                    </svg>
+                    Delete
+                </button>
+            </form>
+        @endif
+    </td>
+</tr>
+<tr id="student-content-{{ $project->id }}" style="display: none;">
+    <td colspan="6" class="bg-gray-50">
+        <div class="p-4">
+            @if($project->progressReports->count() > 0)
+                <div class="mb-4">
+                    <h4 class="text-sm font-medium text-gray-700 mb-2">Progress Reports</h4>
+                    <div class="space-y-2">
+                        @foreach($project->progressReports as $report)
+                            <div class="bg-white rounded-lg p-3 border border-gray-200">
+                                <div class="flex justify-between items-start mb-2">
+                                    <div>
+                                        <div class="text-sm font-medium text-gray-900">{{ $report->title }}</div>
+                                        <div class="text-xs text-gray-500">{{ $report->user->name }} - {{ $report->report_date->format('M d, Y') }}</div>
+                                    </div>
+                                    <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium
+                                        {{ $report->status === 'approved' ? 'bg-green-100 text-green-800' : ($report->status === 'needs_revision' ? 'bg-yellow-100 text-yellow-800' : 'bg-gray-100 text-gray-800') }}">
+                                        {{ ucfirst($report->status) }}
+                                    </span>
+                                </div>
+                                <p class="text-sm text-gray-700 mb-2">{{ $report->content }}</p>
+                                <div class="text-xs text-gray-500">Progress: {{ $report->progress_percentage }}%</div>
+                            </div>
+                        @endforeach
+                    </div>
+                </div>
+            @endif
+
+            @if($project->documents->count() > 0)
+                <div>
+                    <h4 class="text-sm font-medium text-gray-700 mb-2">Documents</h4>
+                    <div class="space-y-2">
+                        @foreach($project->documents as $document)
+                            <div class="bg-white rounded-lg p-3 border border-gray-200">
+                                <div class="flex justify-between items-center">
+                                    <div>
+                                        <div class="text-sm font-medium text-gray-900">{{ $document->title }}</div>
+                                        <div class="text-xs text-gray-500">{{ $document->user->name }} - {{ $document->file_name }}</div>
+                                        <div class="text-xs text-gray-500">{{ $document->description }}</div>
+                                    </div>
+                                    <div class="flex items-center space-x-2">
+                                        <a href="{{ $document->getFileUrl() }}" class="inline-flex items-center px-3 py-1.5 border border-transparent text-xs font-medium rounded text-blue-700 bg-blue-100 hover:bg-blue-200 transition-colors duration-200" download>
                                             <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
-                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"></path>
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
                                             </svg>
-                                            View
+                                            Download
                                         </a>
-                                        <a href="{{ route('projects.edit', $project) }}" class="inline-flex items-center px-3 py-1.5 border border-transparent text-xs font-medium rounded text-yellow-700 bg-yellow-100 hover:bg-yellow-200 transition-colors duration-200">
-                                            <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path>
-                                            </svg>
-                                            Edit
-                                        </a>
-                                        <form action="{{ route('projects.destroy', $project) }}" method="POST" class="inline">
-                                            @csrf
-                                            @method('DELETE')
-                                            <button type="submit" onclick="return confirm('Are you sure you want to delete this project?')" class="inline-flex items-center px-3 py-1.5 border border-transparent text-xs font-medium rounded text-red-700 bg-red-100 hover:bg-red-200 transition-colors duration-200">
-                                                <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path>
-                                                </svg>
-                                                Delete
-                                            </button>
-                                        </form>
-                                    </td>
-                                </tr>
+                                        <span class="text-xs text-gray-500">{{ $document->file_size }} KB</span>
+                                    </div>
+                                </div>
+                            </div>
+                        @endforeach
+                    </div>
+                </div>
+            @endif
+        </div>
+    </td>
+</tr>
                             @endforeach
                         </tbody>
                     </table>
                 </div>
 
-                <!-- Pagination -->
-                <div class="px-6 py-4 border-t border-gray-200 bg-gray-50">
-                    {{ $projects->links() }}
-                </div>
+<!-- Pagination -->
+<div class="px-6 py-4 border-t border-gray-200 bg-gray-50">
+    @if($projects instanceof \Illuminate\Pagination\LengthAwarePaginator)
+        {{ $projects->links() }}
+    @else
+        <!-- No pagination for collections -->
+    @endif
+</div>
             </div>
         </div>
     </div>

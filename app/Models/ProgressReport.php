@@ -42,9 +42,9 @@ class ProgressReport extends Model
     /**
      * Get the comments for the progress report.
      */
-    public function comments(): BelongsTo
+    public function comments(): HasMany
     {
-        return $this->belongsTo(Comment::class);
+        return $this->hasMany(Comment::class);
     }
 
     /**

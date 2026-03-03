@@ -30,6 +30,10 @@ Route::middleware('auth')->group(function () {
     // Project routes
     Route::resource('projects', ProjectController::class);
 
+    // Project assignment route
+    Route::get('projects/{project}/assign', [ProjectController::class, 'showAssignForm'])->name('projects.assign');
+    Route::post('projects/{project}/assign', [ProjectController::class, 'assignTeacher'])->name('projects.assign.store');
+
     // Document routes for file uploads
     Route::prefix('projects/{project}')->name('projects.')->group(function () {
         Route::post('documents', [ProjectController::class, 'uploadDocument'])->name('documents.store');

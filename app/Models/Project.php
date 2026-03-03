@@ -76,4 +76,14 @@ class Project extends Model
             'cancelled' => 'Cancelled',
         ];
     }
+
+    /**
+     * Get the progress percentage for the project.
+     * Uses the latest progress report or defaults to 0.
+     */
+    public function getProgressAttribute(): int
+    {
+        $latestReport = $this->progressReports()->latest()->first();
+        return $latestReport ? $latestReport->progress_percentage : 0;
+    }
 }

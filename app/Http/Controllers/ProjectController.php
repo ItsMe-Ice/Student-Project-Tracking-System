@@ -91,13 +91,13 @@ class ProjectController extends Controller
     {
         $this->authorizeProjectAccess($project);
 
-                    $request->validate([
-                        'title' => ['required', 'string', 'max:255'],
-                        'description' => ['nullable', 'string'],
-                        'start_date' => ['required', 'date'],
-                        'end_date' => ['required', 'date', 'after:start_date'],
-                        'status' => ['required', 'string', 'in:pending,in_progress,completed,cancelled'],
-                    ]);
+        $request->validate([
+            'title' => ['required', 'string', 'max:255'],
+            'description' => ['nullable', 'string'],
+            'start_date' => ['required', 'date'],
+            'end_date' => ['required', 'date', 'after:start_date'],
+            'status' => ['required', 'string', 'in:pending,in_progress,completed,cancelled'],
+        ]);
 
         $project->update([
             'title' => $request->title,
@@ -206,6 +206,49 @@ class ProjectController extends Controller
         $document->delete();
 
         return redirect()->back()->with('success', 'Document deleted successfully!');
+    }
+
+    /**
+     * Show the form for assigning a teacher to a project.
+     */
+    public function showAssignForm(Project $project)
+    {
+        $this->authorizeProjectAccess($project);
+        
+        // Only teachers and admins can assign teachers
+        $user = Auth::user();
+        if ($user->role !== 'teacher' && $user->role !== 'admin') {
+            abort(403);
+        }
+
+        // Get all teachers for the dropdown
+        $teachers = \App\Models\User::where('role', 'teacher')->get();
+
+        return view('projects.assign', compact('project', 'teachers'));
+    }
+
+    /**
+     * Assign a teacher to a project.
+     */
+    public function assignTeacher(Request $request, Project $project)
+    {
+        $this->authorizeProjectAccess($project);
+        
+        // Only teachers and admins can assign teachers
+        $user = Auth::user();
+        if ($user->role !== 'teacher' && $user->role !== 'admin') {
+            abort(403);
+        }
+
+        $request->validate([
+            'teacher_id' => ['required', 'exists:users,id,role,teacher'],
+        ]);
+
+        $project->update([
+            'teacher_id' => $request->teacher_id,
+        ]);
+
+        return redirect()->route('projects.index')->with('success', 'Teacher assigned successfully!');
     }
 
     /**
