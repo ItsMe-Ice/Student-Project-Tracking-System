@@ -9,6 +9,7 @@ class Comment extends Model
 {
     protected $fillable = [
         'project_id',
+        'document_id',
         'progress_report_id',
         'user_id',
         'content',

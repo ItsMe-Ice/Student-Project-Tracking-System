@@ -40,6 +40,13 @@ Route::middleware('auth')->group(function () {
         Route::delete('documents/{document}', [ProjectController::class, 'deleteDocument'])->name('documents.destroy');
         Route::get('documents/{document}/download', [ProjectController::class, 'downloadDocument'])->name('documents.download');
     });
+
+    // Comment routes
+    Route::prefix('projects/{project}')->name('projects.')->group(function () {
+        Route::post('comments', [\App\Http\Controllers\CommentController::class, 'store'])->name('comments.store');
+        Route::put('comments/{comment}', [\App\Http\Controllers\CommentController::class, 'update'])->name('comments.update');
+        Route::delete('comments/{comment}', [\App\Http\Controllers\CommentController::class, 'destroy'])->name('comments.destroy');
+    });
 });
 
 require __DIR__.'/auth.php';

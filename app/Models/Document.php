@@ -53,4 +53,12 @@ class Document extends Model
     {
         return pathinfo($this->file_name, PATHINFO_EXTENSION);
     }
+
+    /**
+     * Get the comments for the document.
+     */
+    public function comments()
+    {
+        return $this->hasMany(Comment::class, 'document_id');
+    }
 }

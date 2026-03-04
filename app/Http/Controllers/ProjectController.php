@@ -72,6 +72,21 @@ class ProjectController extends Controller
     public function show(Project $project)
     {
         $this->authorizeProjectAccess($project);
+        
+        // Load comments with user information and replies
+        $project->load([
+            'comments' => function ($query) {
+                $query->with(['user', 'replies.user'])
+                      ->whereNull('parent_id')
+                      ->orderBy('created_at', 'asc'); // Changed from 'desc' to 'asc' to show oldest first
+            },
+            'documents.comments' => function ($query) {
+                $query->with(['user', 'replies.user'])
+                      ->whereNull('parent_id')
+                      ->orderBy('created_at', 'asc'); // Changed from 'desc' to 'asc' to show oldest first
+            }
+        ]);
+        
         return view('projects.show', compact('project'));
     }
 
