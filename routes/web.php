@@ -41,6 +41,14 @@ Route::middleware('auth')->group(function () {
         Route::get('documents/{document}/download', [ProjectController::class, 'downloadDocument'])->name('documents.download');
     });
 
+    // Document-specific routes for viewing and commenting
+    Route::prefix('projects/{project}/documents/{document}')->name('projects.documents.')->group(function () {
+        Route::get('/', [DocumentController::class, 'show'])->name('show');
+        Route::post('comments', [DocumentController::class, 'storeComment'])->name('comments.store');
+        Route::put('comments/{comment}', [DocumentController::class, 'updateComment'])->name('comments.update');
+        Route::delete('comments/{comment}', [DocumentController::class, 'destroyComment'])->name('comments.destroy');
+    });
+
     // Comment routes
     Route::prefix('projects/{project}')->name('projects.')->group(function () {
         Route::post('comments', [\App\Http\Controllers\CommentController::class, 'store'])->name('comments.store');
