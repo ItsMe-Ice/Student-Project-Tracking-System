@@ -218,7 +218,7 @@
             <!-- Calendar Section -->
             <div class="bg-white rounded-xl shadow-lg p-6 mb-8">
                 <div class="flex items-center justify-between mb-6">
-                    <h3 class="text-lg font-semibold text-gray-900">Calendar</h3>
+                    <h3 class="text-lg font-semibold text-gray-900">Project Deadlines Calendar</h3>
                     <div class="flex items-center space-x-4">
                         <button id="prevMonth" class="p-2 hover:bg-gray-100 rounded-full transition-colors">
                             <svg class="w-5 h-5 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
@@ -246,6 +246,33 @@
                 
                 <div id="calendarGrid" class="grid grid-cols-7 gap-1">
                     <!-- Calendar days will be populated by JavaScript -->
+                </div>
+                
+                <!-- Legend -->
+                <div class="mt-4 flex flex-col items-center space-y-2 text-sm text-gray-600">
+                    <div class="flex items-center justify-center space-x-6">
+                        <div class="flex items-center space-x-2">
+                            <div class="w-3 h-3 bg-red-500 rounded-full"></div>
+                            <span>Project Due</span>
+                        </div>
+                        <div class="flex items-center space-x-2">
+                            <div class="w-3 h-3 bg-blue-500 rounded-full"></div>
+                            <span>Completed</span>
+                        </div>
+                        <div class="flex items-center space-x-2">
+                            <div class="w-3 h-3 bg-green-500 rounded-full"></div>
+                            <span>In Progress</span>
+                        </div>
+                    </div>
+                    <div class="text-xs text-gray-500 text-center">
+                        @if(auth()->user()->role === 'admin')
+                            Admin: Shows all project deadlines
+                        @elseif(auth()->user()->role === 'teacher')
+                            Teacher: Shows only your assigned students' project deadlines
+                        @else
+                            Student: Shows only your project deadlines
+                        @endif
+                    </div>
                 </div>
             </div>
 
@@ -324,6 +351,7 @@
             let currentDate = new Date();
             let currentYear = currentDate.getFullYear();
             let currentMonth = currentDate.getMonth();
+            let projectDeadlines = [];
 
             // Month names for display
             const monthNames = [
@@ -331,16 +359,43 @@
                 'July', 'August', 'September', 'October', 'November', 'December'
             ];
 
-            // Project deadlines (you can fetch these from your backend)
-            const projectDeadlines = [
-                { date: '2024-03-15', title: 'Project A Due', color: 'bg-red-500' },
-                { date: '2024-03-20', title: 'Project B Due', color: 'bg-blue-500' },
-                { date: '2024-03-25', title: 'Project C Due', color: 'bg-green-500' }
-            ];
+            // Fetch project deadlines from the server
+            async function fetchProjectDeadlines() {
+                try {
+                    const response = await fetch('/api/projects/deadlines');
+                    if (response.ok) {
+                        projectDeadlines = await response.json();
+                        console.log('Fetched project deadlines:', projectDeadlines);
+                    } else {
+                        console.error('Failed to fetch project deadlines:', response.status);
+                        // Fallback to empty array
+                        projectDeadlines = [];
+                    }
+                } catch (error) {
+                    console.error('Error fetching project deadlines:', error);
+                    // Fallback to empty array
+                    projectDeadlines = [];
+                }
+            }
+
+            function getProjectColor(status) {
+                switch (status) {
+                    case 'completed':
+                        return 'bg-blue-500';
+                    case 'in_progress':
+                        return 'bg-green-500';
+                    default:
+                        return 'bg-red-500';
+                }
+            }
 
             function renderCalendar() {
                 calendarGrid.innerHTML = '';
                 currentMonthElement.textContent = `${monthNames[currentMonth]} ${currentYear}`;
+
+                // Debug: Show what data we have
+                console.log('Rendering calendar with', projectDeadlines.length, 'projects');
+                console.log('Project deadlines data:', projectDeadlines);
 
                 // Get first day of month and total days
                 const firstDay = new Date(currentYear, currentMonth, 1);
@@ -373,13 +428,35 @@
 
                     // Check for project deadlines
                     const dateString = `${currentYear}-${String(currentMonth + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
-                    const deadline = projectDeadlines.find(d => d.date === dateString);
+                    const deadlinesForDay = projectDeadlines.filter(d => d.date === dateString);
                     
-                    if (deadline) {
-                        const deadlineDot = document.createElement('div');
-                        deadlineDot.className = `w-2 h-2 ${deadline.color} rounded-full absolute top-1 right-1`;
-                        deadlineDot.title = deadline.title;
-                        dayCell.appendChild(deadlineDot);
+                    if (deadlinesForDay.length > 0) {
+                        console.log(`Found ${deadlinesForDay.length} deadlines for ${dateString}:`, deadlinesForDay);
+                        
+                        // Create a container for multiple deadline dots
+                        const deadlinesContainer = document.createElement('div');
+                        deadlinesContainer.className = 'absolute top-1 right-1 flex space-x-1';
+                        
+                        // Show up to 3 deadline dots
+                        const displayDeadlines = deadlinesForDay.slice(0, 3);
+                        
+                        displayDeadlines.forEach((deadline, index) => {
+                            const deadlineDot = document.createElement('div');
+                            deadlineDot.className = `w-2 h-2 ${getProjectColor(deadline.status)} rounded-full`;
+                            deadlineDot.title = `${deadline.title} - ${deadline.status} - ${deadline.student_name}`;
+                            deadlineDot.style.transform = `translateX(-${index * 6}px)`;
+                            deadlinesContainer.appendChild(deadlineDot);
+                        });
+                        
+                        // If there are more than 3, show a "+N" indicator
+                        if (deadlinesForDay.length > 3) {
+                            const moreIndicator = document.createElement('div');
+                            moreIndicator.className = 'text-xs text-gray-500 absolute -top-1 -right-2';
+                            moreIndicator.textContent = `+${deadlinesForDay.length - 3}`;
+                            deadlinesContainer.appendChild(moreIndicator);
+                        }
+                        
+                        dayCell.appendChild(deadlinesContainer);
                     }
 
                     dayCell.appendChild(dayNumber);
@@ -406,8 +483,10 @@
                 renderCalendar();
             });
 
-            // Initial render
-            renderCalendar();
+            // Initial render and fetch data
+            fetchProjectDeadlines().then(() => {
+                renderCalendar();
+            });
         });
     </script>
 </x-app-layout>

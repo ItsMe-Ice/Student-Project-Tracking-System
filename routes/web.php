@@ -4,6 +4,7 @@ use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\StudentController;
 use App\Http\Controllers\ProjectController;
 use App\Http\Controllers\DocumentController;
+use App\Http\Controllers\Api\ProjectController as ApiProjectController;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', function () {
@@ -13,6 +14,11 @@ Route::get('/', function () {
 Route::get('/dashboard', function () {
     return view('dashboard');
 })->middleware(['auth', 'verified'])->name('dashboard');
+
+// API routes for dashboard calendar
+Route::middleware('auth')->group(function () {
+    Route::get('/api/projects/deadlines', [ApiProjectController::class, 'getDeadlines'])->name('api.projects.deadlines');
+});
 
 Route::middleware('auth')->group(function () {
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
