@@ -215,6 +215,40 @@
                 </div>
             @endif
 
+            <!-- Calendar Section -->
+            <div class="bg-white rounded-xl shadow-lg p-6 mb-8">
+                <div class="flex items-center justify-between mb-6">
+                    <h3 class="text-lg font-semibold text-gray-900">Calendar</h3>
+                    <div class="flex items-center space-x-4">
+                        <button id="prevMonth" class="p-2 hover:bg-gray-100 rounded-full transition-colors">
+                            <svg class="w-5 h-5 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path>
+                            </svg>
+                        </button>
+                        <h4 id="currentMonth" class="text-md font-medium text-gray-700"></h4>
+                        <button id="nextMonth" class="p-2 hover:bg-gray-100 rounded-full transition-colors">
+                            <svg class="w-5 h-5 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
+                            </svg>
+                        </button>
+                    </div>
+                </div>
+                
+                <div class="grid grid-cols-7 gap-1 mb-2">
+                    <div class="text-center text-xs font-semibold text-gray-500 py-2">Mon</div>
+                    <div class="text-center text-xs font-semibold text-gray-500 py-2">Tue</div>
+                    <div class="text-center text-xs font-semibold text-gray-500 py-2">Wed</div>
+                    <div class="text-center text-xs font-semibold text-gray-500 py-2">Thu</div>
+                    <div class="text-center text-xs font-semibold text-gray-500 py-2">Fri</div>
+                    <div class="text-center text-xs font-semibold text-gray-500 py-2">Sat</div>
+                    <div class="text-center text-xs font-semibold text-gray-500 py-2">Sun</div>
+                </div>
+                
+                <div id="calendarGrid" class="grid grid-cols-7 gap-1">
+                    <!-- Calendar days will be populated by JavaScript -->
+                </div>
+            </div>
+
             <!-- Quick Stats Section -->
             <div class="bg-white rounded-xl shadow-lg p-6">
                 <h3 class="text-lg font-semibold text-gray-900 mb-4">Quick Stats</h3>
@@ -278,4 +312,102 @@
             </div>
         </div>
     </div>
+
+    <!-- Calendar JavaScript -->
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const calendarGrid = document.getElementById('calendarGrid');
+            const currentMonthElement = document.getElementById('currentMonth');
+            const prevMonthBtn = document.getElementById('prevMonth');
+            const nextMonthBtn = document.getElementById('nextMonth');
+            
+            let currentDate = new Date();
+            let currentYear = currentDate.getFullYear();
+            let currentMonth = currentDate.getMonth();
+
+            // Month names for display
+            const monthNames = [
+                'January', 'February', 'March', 'April', 'May', 'June',
+                'July', 'August', 'September', 'October', 'November', 'December'
+            ];
+
+            // Project deadlines (you can fetch these from your backend)
+            const projectDeadlines = [
+                { date: '2024-03-15', title: 'Project A Due', color: 'bg-red-500' },
+                { date: '2024-03-20', title: 'Project B Due', color: 'bg-blue-500' },
+                { date: '2024-03-25', title: 'Project C Due', color: 'bg-green-500' }
+            ];
+
+            function renderCalendar() {
+                calendarGrid.innerHTML = '';
+                currentMonthElement.textContent = `${monthNames[currentMonth]} ${currentYear}`;
+
+                // Get first day of month and total days
+                const firstDay = new Date(currentYear, currentMonth, 1);
+                const lastDay = new Date(currentYear, currentMonth + 1, 0);
+                const startDate = firstDay.getDay(); // 0 = Sunday, 1 = Monday, etc.
+                const totalDays = lastDay.getDate();
+
+                // Add empty cells for days before the first day of the month
+                for (let i = 0; i < startDate; i++) {
+                    const emptyCell = document.createElement('div');
+                    emptyCell.className = 'h-16 border border-gray-100';
+                    calendarGrid.appendChild(emptyCell);
+                }
+
+                // Add days of the month
+                for (let day = 1; day <= totalDays; day++) {
+                    const dayCell = document.createElement('div');
+                    dayCell.className = 'h-16 border border-gray-100 p-1 hover:bg-gray-50 transition-colors relative';
+                    
+                    // Create day number
+                    const dayNumber = document.createElement('div');
+                    dayNumber.className = 'text-xs font-semibold text-gray-700 mb-1';
+                    dayNumber.textContent = day;
+                    
+                    // Check if today
+                    const today = new Date();
+                    if (day === today.getDate() && currentMonth === today.getMonth() && currentYear === today.getFullYear()) {
+                        dayNumber.className += ' text-blue-600 bg-blue-50 rounded-full w-6 h-6 flex items-center justify-center';
+                    }
+
+                    // Check for project deadlines
+                    const dateString = `${currentYear}-${String(currentMonth + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
+                    const deadline = projectDeadlines.find(d => d.date === dateString);
+                    
+                    if (deadline) {
+                        const deadlineDot = document.createElement('div');
+                        deadlineDot.className = `w-2 h-2 ${deadline.color} rounded-full absolute top-1 right-1`;
+                        deadlineDot.title = deadline.title;
+                        dayCell.appendChild(deadlineDot);
+                    }
+
+                    dayCell.appendChild(dayNumber);
+                    calendarGrid.appendChild(dayCell);
+                }
+            }
+
+            // Event listeners for navigation
+            prevMonthBtn.addEventListener('click', function() {
+                currentMonth--;
+                if (currentMonth < 0) {
+                    currentMonth = 11;
+                    currentYear--;
+                }
+                renderCalendar();
+            });
+
+            nextMonthBtn.addEventListener('click', function() {
+                currentMonth++;
+                if (currentMonth > 11) {
+                    currentMonth = 0;
+                    currentYear++;
+                }
+                renderCalendar();
+            });
+
+            // Initial render
+            renderCalendar();
+        });
+    </script>
 </x-app-layout>
