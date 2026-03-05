@@ -30,6 +30,23 @@
                         <x-input-error :messages="$errors->get('description')" class="mt-2" />
                     </div>
 
+                    <!-- Teacher Assignment (for students) -->
+                    @if(auth()->user()->role === 'student')
+                        <div>
+                            <x-input-label for="teacher_id" :value="__('Assign Teacher (Optional)')" />
+                            <select id="teacher_id" class="block mt-1 w-full border-gray-300 focus:border-indigo-500 focus:ring-indigo-500 rounded-md shadow-sm" name="teacher_id">
+                                <option value="">{{ __('Select a teacher to assign (optional)') }}</option>
+                                @foreach(\App\Models\User::where('role', 'teacher')->get() as $teacher)
+                                    <option value="{{ $teacher->id }}" {{ old('teacher_id') == $teacher->id ? 'selected' : '' }}>
+                                        {{ $teacher->name }} ({{ $teacher->email }})
+                                    </option>
+                                @endforeach
+                            </select>
+                            <p class="mt-1 text-sm text-gray-600">You can assign a teacher to review your project. Leave blank if you want to assign later.</p>
+                            <x-input-error :messages="$errors->get('teacher_id')" class="mt-2" />
+                        </div>
+                    @endif
+
                     <!-- Dates -->
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                         <div>

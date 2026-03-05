@@ -14,8 +14,8 @@
             </div>
             <div class="flex space-x-2">
                 <a href="{{ route('projects.documents.download', [$project, $document]) }}" 
-                   class="inline-flex items-center px-4 py-2 bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 text-white text-sm font-medium rounded-lg transition-all duration-200 shadow-md hover:shadow-lg transform hover:-translate-y-1 group">
-                    <svg class="w-4 h-4 mr-2 group-hover:scale-110 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                   class="inline-flex items-center px-4 py-2 bg-green-600 hover:bg-green-700 text-white text-sm font-medium rounded-lg transition-colors duration-200 shadow-md hover:shadow-lg">
+                    <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
                     </svg>
                     Download
@@ -137,6 +137,18 @@
                     <!-- Add Comment Section -->
                     @if(auth()->user()->role === 'teacher' || auth()->user()->role === 'student')
                         <div class="mb-6">
+                            <button type="button" 
+                                    onclick="toggleCommentForm()"
+                                    class="inline-flex items-center px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-medium rounded-lg transition-colors duration-200 shadow-md hover:shadow-lg">
+                                <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path>
+                                </svg>
+                                Add Comment
+                            </button>
+                        </div>
+                        
+                        <!-- Comment Form -->
+                        <div id="comment-form-container" class="bg-gray-50 rounded-lg p-4 mb-6 hidden">
                             <div class="flex items-start space-x-3">
                                 <!-- User Avatar -->
                                 <div class="flex-shrink-0">
@@ -173,7 +185,12 @@
                                                 @enderror
                                             </div>
                                         </div>
-                                        <div class="mt-3 flex justify-end">
+                                        <div class="mt-3 flex justify-end space-x-3">
+                                            <button type="button" 
+                                                    onclick="toggleCommentForm()"
+                                                    class="px-4 py-2 bg-gray-600 hover:bg-gray-700 text-white text-sm font-medium rounded-lg transition-colors duration-200">
+                                                Cancel
+                                            </button>
                                             <button type="submit" 
                                                     class="inline-flex items-center px-6 py-2 bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-medium rounded-lg transition-colors duration-200 shadow-md hover:shadow-lg">
                                                 <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
@@ -255,6 +272,18 @@
                                                             </svg>
                                                             <span class="text-xs font-medium">Dislike</span>
                                                         </button>
+                                                        
+                                                        <!-- Reply Button -->
+                                                        @if(auth()->user()->role === 'teacher' || auth()->user()->role === 'student')
+                                                            <button type="button" 
+                                                                    onclick="toggleReplyForm('{{ $comment->id }}')"
+                                                                    class="flex items-center space-x-1 text-green-600 dark:text-green-400 hover:text-green-800 dark:hover:text-green-300 transition-colors duration-200 group">
+                                                                <svg class="w-4 h-4 group-hover:scale-110 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 10h10a8 8 0 018 8v2M3 10l6 6m-6-6l6-6"></path>
+                                                                </svg>
+                                                                <span class="text-xs font-medium">Reply</span>
+                                                            </button>
+                                                        @endif
                                                     </div>
                                                     
                                                     <!-- Comment Actions Menu -->
@@ -332,6 +361,55 @@
                                             </form>
                                         </div>
                                     @endif
+                                    
+                                    <!-- Reply Form -->
+                                    @if(auth()->user()->role === 'teacher' || auth()->user()->role === 'student')
+                                        <div id="reply-form-{{ $comment->id }}" class="mt-3 hidden">
+                                            <form action="{{ route('projects.documents.comments.store', [$project, $document]) }}" method="POST" class="space-y-3">
+                                                @csrf
+                                                <input type="hidden" name="parent_id" value="{{ $comment->id }}">
+                                                <div class="flex space-x-3">
+                                                    <!-- Reply Avatar -->
+                                                    <div class="flex-shrink-0">
+                                                        <div class="w-8 h-8 bg-gradient-to-br from-green-400 to-blue-500 rounded-full flex items-center justify-center">
+                                                            <span class="text-xs font-bold text-white">{{ strtoupper(substr(auth()->user()->name, 0, 2)) }}</span>
+                                                        </div>
+                                                    </div>
+                                                    
+                                                    <!-- Reply Input -->
+                                                    <div class="flex-1">
+                                                        <div class="bg-white dark:bg-gray-800 rounded-2xl p-3 border border-gray-200 dark:border-gray-600">
+                                                            <textarea name="content" rows="2" 
+                                                                class="w-full resize-none border-0 p-0 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 focus:ring-0"
+                                                                placeholder="Write a reply..."></textarea>
+                                                            <div class="flex items-center justify-between mt-2">
+                                                                <div class="flex items-center space-x-2">
+                                                                    <select name="comment_type" 
+                                                                        class="text-xs border border-gray-300 dark:border-gray-600 rounded px-2 py-1 bg-white dark:bg-gray-700 text-gray-900 dark:text-white">
+                                                                        <option value="general">General</option>
+                                                                        <option value="feedback">Feedback</option>
+                                                                        <option value="question">Question</option>
+                                                                        <option value="answer">Answer</option>
+                                                                    </select>
+                                                                </div>
+                                                                <div class="flex items-center space-x-2">
+                                                                    <button type="button" 
+                                                                            onclick="toggleReplyForm('{{ $comment->id }}')"
+                                                                            class="px-3 py-1 text-xs bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-200 rounded-full hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors duration-200">
+                                                                        Cancel
+                                                                    </button>
+                                                                    <button type="submit" 
+                                                                            class="px-3 py-1 text-xs bg-indigo-600 text-white rounded-full hover:bg-indigo-700 transition-colors duration-200">
+                                                                        Reply
+                                                                    </button>
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </form>
+                                        </div>
+                                    @endif
                                 </div>
                             @endforeach
                         @endif
@@ -343,8 +421,22 @@
 
     <!-- JavaScript for Toggle Functionality -->
     <script>
+        function toggleCommentForm() {
+            const formContainer = document.getElementById('comment-form-container');
+            if (formContainer) {
+                formContainer.classList.toggle('hidden');
+            }
+        }
+
         function toggleEditForm(commentId) {
             const form = document.getElementById('edit-form-' + commentId);
+            if (form) {
+                form.classList.toggle('hidden');
+            }
+        }
+
+        function toggleReplyForm(commentId) {
+            const form = document.getElementById('reply-form-' + commentId);
             if (form) {
                 form.classList.toggle('hidden');
             }

@@ -26,7 +26,8 @@ class DocumentController extends Controller
         }
 
         // Load comments for this document with user information
-        $comments = $document->comments()
+        // Note: Comment model doesn't have document_id field, so we can only filter by project_id
+        $comments = Comment::where('project_id', $project->id)
             ->with('user')
             ->orderBy('created_at', 'asc')
             ->get();
@@ -62,7 +63,6 @@ class DocumentController extends Controller
 
         Comment::create([
             'project_id' => $project->id,
-            'document_id' => $document->id,
             'user_id' => $user->id,
             'content' => $request->content,
             'comment_type' => $request->comment_type,
@@ -76,8 +76,8 @@ class DocumentController extends Controller
      */
     public function updateComment(Request $request, Project $project, Document $document, Comment $comment)
     {
-        // Verify comment belongs to this document and project
-        if ($comment->document_id !== $document->id || $comment->project_id !== $project->id) {
+        // Verify comment belongs to this project
+        if ($comment->project_id !== $project->id) {
             abort(404);
         }
 
@@ -104,8 +104,8 @@ class DocumentController extends Controller
      */
     public function destroyComment(Project $project, Document $document, Comment $comment)
     {
-        // Verify comment belongs to this document and project
-        if ($comment->document_id !== $document->id || $comment->project_id !== $project->id) {
+        // Verify comment belongs to this project
+        if ($comment->project_id !== $project->id) {
             abort(404);
         }
 

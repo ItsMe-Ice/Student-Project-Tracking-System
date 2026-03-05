@@ -52,6 +52,7 @@ class ProjectController extends Controller
             'description' => ['required', 'string'],
             'start_date' => ['required', 'date'],
             'end_date' => ['required', 'date', 'after:start_date'],
+            'teacher_id' => ['nullable', 'exists:users,id,role,teacher'],
         ]);
 
         $project = Project::create([
@@ -60,6 +61,7 @@ class ProjectController extends Controller
             'start_date' => $request->start_date,
             'end_date' => $request->end_date,
             'user_id' => Auth::id(),
+            'teacher_id' => $request->teacher_id,
             'status' => 'pending',
         ]);
 
@@ -80,10 +82,8 @@ class ProjectController extends Controller
                       ->whereNull('parent_id')
                       ->orderBy('created_at', 'asc'); // Changed from 'desc' to 'asc' to show oldest first
             },
-            'documents.comments' => function ($query) {
-                $query->with(['user', 'replies.user'])
-                      ->whereNull('parent_id')
-                      ->orderBy('created_at', 'asc'); // Changed from 'desc' to 'asc' to show oldest first
+            'documents' => function ($query) {
+                $query->with(['user']);
             }
         ]);
         
